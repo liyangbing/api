@@ -1,0 +1,13 @@
+.settings
+.project
+target/
+node_modules/
+.idea
+parent.iml
+./src/main/resources/log4j.xml
+.classpath
+hsf.configuration
+src/.DS_Store
+.DS_Store
+*.log
+eclipse.bat
