@@ -11,9 +11,9 @@ public class MainGenerator {
         beanGenerator.generate();
 
         // 产生DAO和对应的Manager类
-        String[] entities = new String[]{"City"};
-        BusinessGenerator businessGenerator = new BusinessGenerator();
-        businessGenerator.generate(entities);
+//        String[] entities = new String[]{"City"};
+//        BusinessGenerator businessGenerator = new BusinessGenerator();
+//        businessGenerator.generate(entities);
     }
 }
 

@@ -27,13 +27,17 @@ public interface BaseService<E, PK extends Serializable> {
 	 */
 	public void delete(PK id);
 
-    public void delete(PK[] ids);
-
 	/**
 	 * 保存实体对象<br>
 	 * @param entity 实体对象
 	 */
 	public Long save(E entity);
+
+    /**
+     * 保存实体对象<br>
+     * @param entity 实体对象
+     */
+    public Long saveSelective(E entity);
 
 	/**
 	 * 更新实体，<br>
@@ -43,18 +47,20 @@ public interface BaseService<E, PK extends Serializable> {
 
     /**
      * 根据参数Map更新
-     * @param map
+     * @param entity
      */
-    public void update(Map map);
+    public void updateSelective(E entity);
 
-    // ======================  list 查找 ========================
-	public E findUniqueBy(String propertyName, Object value);
-    public List<E> findListByEntity(E e);
-    public List<E> findListByMap(Map<String, Object> map);
-    public List<Map> findListMapByMap(Map<String, Object> map);
+    /**
+     *
+     * @return
+     */
+    public List<E> selectAll(E entity);
 
-    //=================== 分页 ==================================
-    public Page<E> search(Page<E> page, E e);
-    public Page<E> search(Page<E> page, Map map);
-    public Page<Map> searchMap(Page<Map> page, Map map);
+    /**
+     * 分页
+     * @param page
+     * @return
+     */
+    public Page<E> search(Page<E> page, E entity);
 }

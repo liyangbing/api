@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.swing.text.html.parser.Entity;
 import java.beans.BeanInfo;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
@@ -25,7 +26,7 @@ import java.util.Map;
  * Date: 13-12-2
  * Description: Ibatis BaseDAO实现
  */
-public class BaseDAOMyBatis<T, PK extends Serializable> implements BaseDAO<T, PK> {
+public class BaseDAOMyBatis<E, PK extends Serializable> implements BaseDAO<E, PK> {
 
     @Autowired
     private SqlSessionTemplate sqlSessionTemplate;
@@ -41,68 +42,49 @@ public class BaseDAOMyBatis<T, PK extends Serializable> implements BaseDAO<T, PK
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public static final String POSTFIX_INSERT = ".insertSelective";
+    // 基本增删改查
+    public static final String POSTFIX_INSERT = ".insert";
+    public static final String POSTFIX_INSERT_SELECTIVE = ".insertSelective";
     public static final String POSTFIX_DELETEBYID = ".deleteByPrimaryKey";
-    public static final String POSTFIX_DELETEBYIDS = ".deleteByIds";
-    public static final String POSTFIX_UPDATE = ".updateByPrimaryKeySelective";
-    public static final String POSTFIX_UPDATEBYMAP = ".updateByMap";
-
-    //
+    public static final String POSTFIX_UPDATE= ".updateByPrimaryKey";
+    public static final String POSTFIX_UPDATE_SELECTIVE = ".updateByPrimaryKeySelective";
     public static final String POSTFIX_SELECTBYID = ".selectByPrimaryKey";
-    public static final String POSTFIX_SELECTLISTBYMAP = ".selectListByMap";
-    public static final String POSTFIX_SELECTLISTMAPBYMAP = ".selectListMapByMap";
 
-    //
+
+    // 列表
+    public static final String POSTFIX_SELECTLIST = ".selectAll";
+
+    // 分页
     public static final String TOTAL_COUNT_END_STR = ".TotalCount";
-    public static final String TOTAL_COUNT_END_STR_PAGEMAP = ".PageMapTotalCount";
-
     public static final String START_ROW = "startRow";
     public static final String MAX_ROW_NUM = "maxRowNum";
-    public static final String POSTFIX_SELECTPAGEBYMAP = ".selectPageByMap";
-    public static final String POSTFIX_SELECTPAGEMAPBYMAP = ".selectPageMapByMap";
+    public static final String POSTFIX_SELECTPAGE = ".selectPage";
 
-    public static final String NAMESPACE = "com.domain.entity.xml.";
+    public static final String POSTFIX_NAMESPACE = "com.domain.entity.xml.";
+    public static final String PREFIX_NAMESPACE = "Mapper";
 
     /**
      * DAO所管理的Entity类型
      */
-    protected Class<T> clazz;
+    protected Class<E> clazz;
     protected String clazzName;
+    protected String nameSpace; // 命名空间
 
     public BaseDAOMyBatis() {
-        clazz = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+        clazz = (Class<E>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
         clazzName = clazz.getSimpleName();
-        clazzName = NAMESPACE + clazzName + "Mapper";
+        nameSpace = POSTFIX_NAMESPACE + clazzName + PREFIX_NAMESPACE;
     }
 
     @Override
-    public T get(PK id) {
-        T t = (T) sqlSessionTemplate.selectOne(clazzName + POSTFIX_SELECTBYID, id);
-        return t;
+    public E get(PK id) {
+        E e = sqlSessionTemplate.selectOne(nameSpace + POSTFIX_SELECTBYID, id);
+        return e;
     }
 
     @Override
-    public void delete(T t) {
-        // todo
-    }
-
-    @Override
-    public void delete(PK id) {
-        sqlSessionTemplate.delete(clazzName + POSTFIX_DELETEBYID, id);
-    }
-
-    public void delete(PK[] ids) {
-        if (ids == null || ids.length == 0) return;
-        List<PK> idList = new ArrayList<PK>();
-        for (PK id : ids) {
-            idList.add(id);
-        }
-        sqlSessionTemplate.delete(clazzName + POSTFIX_DELETEBYIDS, idList);
-    }
-
-    @Override
-    public Long save(T entity) {
-        sqlSessionTemplate.insert(clazzName + POSTFIX_INSERT, entity);
+    public Long saveSelective(E entity) {
+        sqlSessionTemplate.insert(nameSpace + POSTFIX_INSERT_SELECTIVE, entity);
         Long id = null;
         try {
             id = (Long) entity.getClass().getDeclaredMethod("getId").invoke(entity);
@@ -116,59 +98,53 @@ public class BaseDAOMyBatis<T, PK extends Serializable> implements BaseDAO<T, PK
     }
 
     @Override
-    public void update(T entity) {
-        sqlSessionTemplate.update(clazzName + POSTFIX_UPDATE, entity);
+    public void updateSelective(E entity) {
+        sqlSessionTemplate.update(nameSpace + POSTFIX_UPDATE_SELECTIVE, entity);
     }
 
     @Override
-    public void update(Map map) {
-        sqlSessionTemplate.update(clazzName + POSTFIX_UPDATEBYMAP, map);
+    public void delete(PK id) {
+        sqlSessionTemplate.delete(nameSpace + POSTFIX_DELETEBYID, id);
     }
 
     @Override
-    public List<T> findListByEnity(T entity) {
-        Map parameterMap = this.convertBean(entity);
-        return sqlSessionTemplate.selectList(clazzName + POSTFIX_SELECTLISTBYMAP, parameterMap);
-    }
-
-    @Override
-    public List<T> findListByMap(Map map) {
-        return sqlSessionTemplate.selectList(clazzName + POSTFIX_SELECTLISTBYMAP, map);
-    }
-
-    @Override
-    public List<Map> findListMapByMap(Map map) {
-        return sqlSessionTemplate.selectList(clazzName + POSTFIX_SELECTLISTMAPBYMAP, map);
-    }
-
-    @Override
-    public T findUniqueBy(String propertyName, Object value) {
+    public Long save(E entity) {
+        sqlSessionTemplate.insert(nameSpace + POSTFIX_INSERT, entity);
+        Long id = null;
         try {
-            T t = clazz.newInstance();
-            PropertyUtils.setProperty(t, propertyName, value);
-            List<T> list = findListByEnity(t);
-            if (list != null && list.size() > 0) {
-                return list.get(0);
-            }
-        } catch (Exception exception) {
-            exception.printStackTrace();
-            throw new RuntimeException(exception);
+            id = (Long) entity.getClass().getDeclaredMethod("getId").invoke(entity);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return null;
+        if (id == null) {
+            return id;
+        }
+        return Long.valueOf(id);
+    }
+
+    @Override
+    public void update(E entity) {
+        sqlSessionTemplate.update(nameSpace + POSTFIX_UPDATE, entity);
+    }
+
+    @Override
+    public List<E> selectAll(E entity) {
+        Map parameterMap = this.convertBean(entity);
+        return sqlSessionTemplate.selectList(nameSpace + POSTFIX_SELECTLIST, parameterMap);
     }
 
     // =========================================================================
-    public Page<T> search(Page<T> page, T e) {
+    public Page<E> search(Page<E> page, E e) {
         Map parameterMap = this.convertBean(e);
         return searchByMap(page, parameterMap);
     }
 
-    public Page<T> searchByMap(Page<T> page, Map parameterMap) {
+    public Page<E> searchByMap(Page<E> page, Map parameterMap) {
 
         // 统计并设置结果集记录总数
         if (page.isAutoCount()) {
             Object totalCount = sqlSessionTemplate.selectOne(
-                    clazzName + BaseDAOMyBatis.TOTAL_COUNT_END_STR,
+                    nameSpace + BaseDAOMyBatis.TOTAL_COUNT_END_STR,
                     parameterMap);
             page.setTotalCount((Long) totalCount);
         }
@@ -189,41 +165,7 @@ public class BaseDAOMyBatis<T, PK extends Serializable> implements BaseDAO<T, PK
 
         //parameterMap.put(BaseDAOIbatis.END_ROW, endRow);  //oracle分页用到
         // 根据statementName和查询条件parameterObject查询
-        List resultList = sqlSessionTemplate.selectList(clazzName + BaseDAOMyBatis.POSTFIX_SELECTPAGEBYMAP,
-                parameterMap);
-
-        // 查询出的结果集合设置到page对象
-        page.setResult(resultList);
-        return page;
-    }
-
-    @Override
-    public Page<Map> searchMapByMap(Page<Map> page, Map parameterMap) {
-        // 统计并设置结果集记录总数
-        if (page.isAutoCount()) {
-            Object totalCount = sqlSessionTemplate.selectOne(
-                    clazzName + BaseDAOMyBatis.TOTAL_COUNT_END_STR_PAGEMAP,
-                    parameterMap);
-            page.setTotalCount((Long) totalCount);
-        }
-
-        // 获得page中的参数并设置到ParameterMap
-        // 获取记录的开始行数,从0开始
-        int startRow = page.getFirst();
-
-        // 步长,一共获取几行
-        int maxRowNum = page.getPageSize();
-
-        // 获取记录的结束行数,Oracle数据库用到,使用"startRow"和"endRow"参数
-        //int endRow = (maxRowNum > 0) ? (startRow + maxRowNum ) : startRow;
-
-        // 参数并设置到ParameterMap
-        parameterMap.put(BaseDAOMyBatis.START_ROW, startRow);
-        parameterMap.put(BaseDAOMyBatis.MAX_ROW_NUM, maxRowNum);
-
-        //parameterMap.put(BaseDAOIbatis.END_ROW, endRow);  //oracle分页用到
-        // 根据statementName和查询条件parameterObject查询
-        List resultList = sqlSessionTemplate.selectList(clazzName + BaseDAOMyBatis.POSTFIX_SELECTPAGEMAPBYMAP,
+        List resultList = sqlSessionTemplate.selectList(nameSpace + BaseDAOMyBatis.POSTFIX_SELECTPAGE,
                 parameterMap);
 
         // 查询出的结果集合设置到page对象

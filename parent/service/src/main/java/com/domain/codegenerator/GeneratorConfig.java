@@ -8,12 +8,12 @@ public class GeneratorConfig {
     /**
      * 此处根据自己情况，修改
      */
-    public static String PROJECT_PATH = "D:/workspace/project/"; // 项目路径
+    public static String PROJECT_PATH = "E:/pay/Banana/parent/service/"; // 项目路径
 
     /**
      * 下面的位置是相对PROJECT_PATH,根据项目情况修改
      */
-    public static String GENERATOR_CONFIG = "src/main/java/com/domain/codegenerator/generatorConfig.xml";
+    public static String GENERATOR_CONFIG = "src/main/resources/generatorConfig.xml";
     public static String ENTITY_GEN_PATH = "src/main/java/com/domain/cms/domain"; // entity路径
     public static String DAO_GEN_PATH = "src/main/java/com/domain/cms/dao"; // 产生的DAO路径
     public static String DAO_IMPL_GEN_PATH = "src/main/java/com/domain/cms/dao/impl"; // 产生的DAO Impl路径

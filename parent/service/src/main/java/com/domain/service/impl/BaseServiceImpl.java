@@ -40,60 +40,33 @@ public abstract class BaseServiceImpl<E,PK extends Serializable> implements Base
 		getBaseDao().delete(id);
     }
 
-    public void delete(PK[] ids) {
-        getBaseDao().delete(ids);
-    }
-
 	public Long save(E entity) {
         Long id = getBaseDao().save(entity);
         return id;
 	}
 
-	public void update(E entity) {
+    @Override
+    public Long saveSelective(E entity) {
+        return getBaseDao().save(entity);
+    }
+
+    public void update(E entity) {
 		getBaseDao().update(entity);
 	}
 
-    public void update(Map map) {
-        getBaseDao().update(map);
+    public void updateSelective(E entity) {
+        getBaseDao().updateSelective(entity);
     }
 
-    // =====================================================================================
-
+    // list
     @Transactional(readOnly=true, propagation= Propagation.NOT_SUPPORTED)
-    public List<E> findListByEntity(E e) {
-        return getBaseDao().findListByEnity(e);
+    public List<E> selectAll(E e) {
+        return getBaseDao().selectAll(e);
     }
 
-    @Transactional(readOnly=true, propagation= Propagation.NOT_SUPPORTED)
-    public List<E> findListByMap(Map<String,Object> map) {
-        return getBaseDao().findListByMap(map);
-    }
-
-    @Transactional(readOnly=true, propagation= Propagation.NOT_SUPPORTED)
-    public List<Map> findListMapByMap(Map<String,Object> map) {
-        return getBaseDao().findListMapByMap(map);
-    }
-
-    @Transactional(readOnly=true, propagation= Propagation.NOT_SUPPORTED)
-    public E findUniqueBy(String propertyName, Object value) {
-        return getBaseDao().findUniqueBy(propertyName, value);
-    }
-
-
-    // ======================== 分页 =========================================================
+    // 分页
     @Transactional(readOnly=true, propagation= Propagation.NOT_SUPPORTED)
     public Page<E> search(Page<E> page, E e) {
         return getBaseDao().search(page,e);
     }
-
-    @Transactional(readOnly=true, propagation= Propagation.NOT_SUPPORTED)
-    public Page<E> search(Page<E> page, Map map) {
-        return getBaseDao().searchByMap(page,map);
-    }
-
-    @Transactional(readOnly=true, propagation= Propagation.NOT_SUPPORTED)
-    public Page<Map> searchMap(Page<Map> page, Map map) {
-        return getBaseDao().searchMapByMap(page,map);
-    }
-
 }

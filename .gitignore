@@ -1,0 +1,9 @@
+parent/.idea
+parent/target
+parent/parent.iml
+parent/app/target
+parent/app/app.iml
+parent/service/target
+parent/service/service.iml
+
+

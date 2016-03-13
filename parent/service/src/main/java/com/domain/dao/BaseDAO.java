@@ -3,6 +3,7 @@ package com.domain.dao;
 
 import com.domain.common.Page;
 
+import javax.swing.text.html.parser.Entity;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -15,31 +16,31 @@ import java.util.Map;
 public interface BaseDAO<E, PK extends Serializable> {
 
     /**
-	 * 根据主键ID获取对象
+	 * 根据主键id获取对象
 	 * @param id  实体主键
 	 * @return 实体对象
 	 */
 	public E get(PK id) ;
 
 	/**
-	 * 删除实体
-	 * @param entity 实体对象
-	 */
-	public void delete(E entity);
-
-	/**
-	 * 根据主键Id删除实体
+	 * 根据主键id删除实体
 	 * @param id 实体主键
 	 */
 	public void delete(PK id);
 
-    public void delete(PK[] ids);
 
 	/**
-	 * 保存实体对象<br>
+	 * 保存实体对象，所有属性保存<br>
 	 * @param entity 实体对象
 	 */
 	public Long save(E entity);
+
+    /**
+     * 根据属性是否为空，选择性保存实体
+     * @param entity
+     * @return
+     */
+    public Long saveSelective(E entity);
 
 	/**
 	 * 更新实体，<br>
@@ -48,28 +49,22 @@ public interface BaseDAO<E, PK extends Serializable> {
 	public void update(E entity);
 
     /**
-     * 根据参数Map更新
-     * @param map
+     * 根据属性是否为空，选择性更新实体
+     * @param entity
      */
-    public void update(Map map);
+    public void updateSelective(E entity);
 
-
-
-    // ===================== List ============================
-	/**
-	 * 根据属性名和属性值查询唯一对象. 
-	 * @param propertyName
-	 * @param value
-	 * @return 符合条件的唯一对象， 或者是空，或者不存在.
-	 */
-	public E findUniqueBy(String propertyName, Object value);
-
-    public List<E> findListByEnity(E entity);
-    public List<E> findListByMap(Map map);
-    public List<Map> findListMapByMap(Map map);
-
-    // =========================== 分页 ========================
-    public Page<E> search(Page<E> page, E e);
-    public Page<E> searchByMap(Page<E> page, Map parameterMap);
-    public Page<Map> searchMapByMap(Page<Map> page, Map e);
+    /**
+     * selectAll
+     * @param entity 条件，非空字段
+     * @return
+     */
+    public List<E> selectAll(E entity);
+    /**
+     * 分页查询
+     * @param page
+     * @param entity
+     * @return
+     */
+    public Page<E> search(Page<E> page, E entity);
 }
